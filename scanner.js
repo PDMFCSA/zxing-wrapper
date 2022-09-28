@@ -291,8 +291,8 @@ export default function Scanner(domElement, testMode) {
 			try {
 				stream = await window.navigator.mediaDevices.getUserMedia(constraints);
 				const track = stream.getVideoTracks()[0];
-				const capabilities = track.getCapabilities();
-				console.log(capabilities);
+				//const capabilities = track.getCapabilities();
+				//console.log(capabilities);
 
 				constraints.video.height = 1080;
 				constraints.video.width = 1920;
