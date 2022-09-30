@@ -1,28 +1,28 @@
 {
-  "name": "zxing-wrapper",
-  "version": "1.0.1",
-  "description": "a library that exposes a scanner and does code detection using zxing in a worker with extra filters to improve code detection",
-  "main": "scanner.js",
-  "directories": {
-    "lib": "lib"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/webcardinal/zxing-wrapper.git"
-  },
-  "keywords": [
-    "zxing",
-    "code",
-    "scanner",
-    "wrapper"
-  ],
-  "author": "",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/webcardinal/zxing-wrapper/issues"
-  },
-  "homepage": "https://github.com/webcardinal/zxing-wrapper#readme"
+    "name": "zxing-wrapper",
+    "version": "v1.0.2",
+    "description": "a library that exposes a scanner and does code detection using zxing in a worker with extra filters to improve code detection",
+    "main": "scanner.js",
+    "directories": {
+        "lib": "lib"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/webcardinal/zxing-wrapper.git"
+    },
+    "keywords": [
+        "zxing",
+        "code",
+        "scanner",
+        "wrapper"
+    ],
+    "author": "",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/webcardinal/zxing-wrapper/issues"
+    },
+    "homepage": "https://github.com/webcardinal/zxing-wrapper#readme"
 }
