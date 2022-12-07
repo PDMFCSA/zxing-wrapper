@@ -32,8 +32,91 @@ export default function Scanner(domElement, testMode) {
 		internalSetup();
 
 		if (!options.useBasicSetup) {
-			await connectCamera();
+			await connectCamera(options.deviceId);
 		}
+	}
+
+	this.getCameras = async (facingMode) => {
+		let verifyConstraints = function(capabilities){
+			let result = true;
+			if(facingMode){
+				if(capabilities.facingMode &&
+					Array.isArray(capabilities.facingMode) &&
+					capabilities.facingMode.length>0 &&
+					capabilities.facingMode.indexOf(facingMode) === -1){
+					result = false;
+				}
+			}
+			return result;
+		}
+
+		//force user permission request
+		//this fixes an issue on ios: if enumerateDevices is called before user grants permission
+		//the number of returned devices is short (some devices are missing)
+		let stream = await navigator.mediaDevices.getUserMedia({
+			video: true
+		});
+		let track = stream.getVideoTracks()[0];
+		//we need to ensure that no camera remains active
+		track.stop();
+
+		//if we get to this point... we have user permissions, and we can go on detecting the cameras
+		let cameras = [];
+		let listNeedsSorting = false;
+		let devices = await navigator.mediaDevices.enumerateDevices();
+
+		for (let i = 0; i < devices.length; i++) {
+			let device = devices[i];
+			if (device.kind === 'videoinput') {
+				let stream = await navigator.mediaDevices.getUserMedia({
+					video: {
+						deviceId: device.deviceId
+					}
+				});
+				let track = stream.getVideoTracks()[0];
+				let cameraCapabilities = track.getCapabilities();
+				cameraCapabilities.index = i;
+
+				//we need to ensure that no camera remains active
+				track.stop();
+
+				if(verifyConstraints(cameraCapabilities)){
+					//if the flag was not set to true, and we found information about focusMode
+					if(!listNeedsSorting && cameraCapabilities.focusMode){
+						listNeedsSorting = true;
+					}
+					cameras.push({id:device.deviceId, label:device.label, cameraCapabilities});
+				}
+			}
+		}
+
+		//before returning the camera's list we need to put in front the camera with the best changes of being the right one
+		//at this point in time, we believe that if we find multiple camera we should prioritize the one with focusMode continuous
+		if(listNeedsSorting && cameras.length>1){
+			cameras.sort((a,b)=>{
+				let aFocusMode = a.cameraCapabilities.focusMode;
+				aFocusMode = aFocusMode && Array.isArray(aFocusMode) && aFocusMode.indexOf("continuous") !== -1;
+
+				let bFocusMode = b.cameraCapabilities.focusMode;
+				bFocusMode = bFocusMode && Array.isArray(bFocusMode) && bFocusMode.indexOf("continuous") !== -1;
+
+				if(aFocusMode === bFocusMode && aFocusMode === true){
+					//both cameras have focusMode continuous
+					return 0;
+				}
+
+				if(aFocusMode && !bFocusMode){
+					//camera "a" has focusMode continuous
+					return -1;
+				}
+
+				if(!aFocusMode && bFocusMode){
+					//camera "b" has focusMode continuous
+					return 1;
+				}
+			});
+		}
+		return cameras;
 	}
 
 	this.shutDown = async () =>{
@@ -279,7 +362,7 @@ export default function Scanner(domElement, testMode) {
 		return promise;
 	}
 
-	const connectCamera = async () => {
+	const connectCamera = async (deviceId) => {
 		return new Promise(async (resolve, reject) => {
 			let stream;
 			let constraints = {
@@ -287,6 +370,11 @@ export default function Scanner(domElement, testMode) {
 				video: { facingMode },
 				advanced: [{ focusMode: "continuous" }]
 			};
+
+			if(deviceId){
+				//if we are called with a deviceId we ignore any video constraints set with facing mode
+				constraints.video = {deviceId};
+			}
 
 			try {
 				stream = await window.navigator.mediaDevices.getUserMedia(constraints);
