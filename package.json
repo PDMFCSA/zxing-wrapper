@@ -1,6 +1,6 @@
 {
     "name": "zxing-wrapper",
-    "version": "v1.1.0",
+    "version": "v1.1.1",
     "description": "a library that exposes a scanner and does code detection using zxing in a worker with extra filters to improve code detection",
     "main": "scanner.js",
     "directories": {
