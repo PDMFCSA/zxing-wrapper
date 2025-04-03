@@ -475,7 +475,7 @@ export default function Scanner(domElement, testMode) {
   }
 
   const gotFullSupport = () => {
-    return !!window.ImageCapture;
+    return !!window.ImageCapture && !!window.ImageCapture.prototype?.grabFrame;
     //return false;
   }
 
