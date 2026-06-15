@@ -3,7 +3,6 @@ const SCAN_AREA_SIZE = 250;
 const CANVAS_ID = "scene";
 
 export default function Scanner(domElement, testMode) {
-
   let canvas;
   let context;
   let interval;
@@ -21,10 +20,10 @@ export default function Scanner(domElement, testMode) {
     if (!options) {
       options = {};
     }
-    if ((["environment", "user"].includes(options.facingMode))) {
+    if (["environment", "user"].includes(options.facingMode)) {
       facingMode = options.facingMode;
     }
-    if (typeof options.useBasicSetup !== 'boolean') {
+    if (typeof options.useBasicSetup !== "boolean") {
       options.useBasicSetup = true;
     }
 
@@ -34,27 +33,29 @@ export default function Scanner(domElement, testMode) {
     if (!options.useBasicSetup) {
       await connectCamera(options.deviceId);
     }
-  }
+  };
 
   this.getCameras = async (facingMode) => {
     let verifyConstraints = function (capabilities) {
       let result = true;
       if (facingMode) {
-        if (capabilities.facingMode &&
+        if (
+          capabilities.facingMode &&
           Array.isArray(capabilities.facingMode) &&
           capabilities.facingMode.length > 0 &&
-          capabilities.facingMode.indexOf(facingMode) === -1) {
+          capabilities.facingMode.indexOf(facingMode) === -1
+        ) {
           result = false;
         }
       }
       return result;
-    }
+    };
 
     //force user permission request
     //this fixes an issue on ios: if enumerateDevices is called before user grants permission
     //the number of returned devices is short (some devices are missing)
     let stream = await navigator.mediaDevices.getUserMedia({
-      video: true
+      video: true,
     });
     let track = stream.getVideoTracks()[0];
     //we need to ensure that no camera remains active
@@ -67,11 +68,11 @@ export default function Scanner(domElement, testMode) {
 
     for (let i = 0; i < devices.length; i++) {
       let device = devices[i];
-      if (device.kind === 'videoinput') {
+      if (device.kind === "videoinput") {
         let stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            deviceId: device.deviceId
-          }
+            deviceId: device.deviceId,
+          },
         });
         let track = stream.getVideoTracks()[0];
         let cameraCapabilities = track.getCapabilities();
@@ -85,7 +86,11 @@ export default function Scanner(domElement, testMode) {
           if (!listNeedsSorting && cameraCapabilities.focusMode) {
             listNeedsSorting = true;
           }
-          cameras.push({id: device.deviceId, label: device.label, cameraCapabilities});
+          cameras.push({
+            id: device.deviceId,
+            label: device.label,
+            cameraCapabilities,
+          });
         }
       }
     }
@@ -95,10 +100,16 @@ export default function Scanner(domElement, testMode) {
     if (listNeedsSorting && cameras.length > 1) {
       cameras.sort((a, b) => {
         let aFocusMode = a.cameraCapabilities.focusMode;
-        aFocusMode = aFocusMode && Array.isArray(aFocusMode) && aFocusMode.indexOf("continuous") !== -1;
+        aFocusMode =
+          aFocusMode &&
+          Array.isArray(aFocusMode) &&
+          aFocusMode.indexOf("continuous") !== -1;
 
         let bFocusMode = b.cameraCapabilities.focusMode;
-        bFocusMode = bFocusMode && Array.isArray(bFocusMode) && bFocusMode.indexOf("continuous") !== -1;
+        bFocusMode =
+          bFocusMode &&
+          Array.isArray(bFocusMode) &&
+          bFocusMode.indexOf("continuous") !== -1;
 
         if (aFocusMode === bFocusMode && aFocusMode === true) {
           //both cameras have focusMode continuous
@@ -117,7 +128,7 @@ export default function Scanner(domElement, testMode) {
       });
     }
     return cameras;
-  }
+  };
 
   this.shutDown = async () => {
     reset();
@@ -129,7 +140,7 @@ export default function Scanner(domElement, testMode) {
     if (domElement.children.length) {
       domElement.innerHTML = "";
     }
-  }
+  };
 
   this.scan = async () => {
     let frame = getDataForScanning();
@@ -140,7 +151,7 @@ export default function Scanner(domElement, testMode) {
       strokeColor = "#000000";
     }
     return result;
-  }
+  };
 
   this.scanImageData = async (imageData) => {
     canvas.width = imageData.width;
@@ -148,7 +159,7 @@ export default function Scanner(domElement, testMode) {
 
     let tempCanvas = document.createElement("canvas");
     let tempContext = tempCanvas.getContext("2d");
-    let {width, height} = canvas;
+    let { width, height } = canvas;
     tempCanvas.width = width;
     tempCanvas.height = height;
 
@@ -168,35 +179,35 @@ export default function Scanner(domElement, testMode) {
       this.scanCounter = undefined;
       return await decode(getDataForScanning());
     }
-  }
+  };
 
   this.changeWorker = (path) => {
     workerPath = path;
-  }
+  };
 
   this.setScanAreaSize = (size) => {
     scanAreaSize = size;
-  }
+  };
 
   this.drawOverlay = (centerArea, canvasDimensions) => {
     let size = centerArea[3];
-    const {width, height} = canvasDimensions;
+    const { width, height } = canvasDimensions;
 
     const x = (width - size) / 2;
     const y = (height - size) / 2;
 
     const backgroundPoints = [
-      {x: width, y: 0},
-      {x: width, y: height},
-      {x: 0, y: height},
-      {x: 0, y: 0},
+      { x: width, y: 0 },
+      { x: width, y: height },
+      { x: 0, y: height },
+      { x: 0, y: 0 },
     ];
 
     const holePoints = [
-      {x, y: y + size},
-      {x: x + size, y: y + size},
-      {x: x + size, y},
-      {x, y}
+      { x, y: y + size },
+      { x: x + size, y: y + size },
+      { x: x + size, y },
+      { x, y },
     ];
 
     let overlayCanvas = canvas.cloneNode();
@@ -216,20 +227,23 @@ export default function Scanner(domElement, testMode) {
 
     context.closePath();
 
-    context.fillStyle = 'rgba(0, 0, 0, 0.5)'
+    context.fillStyle = "rgba(0, 0, 0, 0.5)";
     context.fill();
 
     drawCenterArea(context);
 
     return overlayCanvas;
-  }
+  };
 
   this.listVideoInputDevices = async () => {
     if (!window.navigator) {
       throw new Error("Can't enumerate devices, navigator is not present.");
     }
 
-    if (!window.navigator.mediaDevices && typeof window.navigator.mediaDevices.enumerateDevices !== 'function') {
+    if (
+      !window.navigator.mediaDevices &&
+      typeof window.navigator.mediaDevices.enumerateDevices !== "function"
+    ) {
       throw new Error("Can't enumerate devices, method not supported.");
     }
 
@@ -237,18 +251,18 @@ export default function Scanner(domElement, testMode) {
 
     const videoDevices = [];
     for (const device of devices) {
-      const {kind} = device;
-      if (kind !== 'videoinput') {
+      const { kind } = device;
+      if (kind !== "videoinput") {
         continue;
       }
       const deviceId = device.deviceId;
       const label = device.label || `Video device ${videoDevices.length + 1}`;
       const groupId = device.groupId;
-      const videoDevice = {deviceId, label, kind, groupId};
+      const videoDevice = { deviceId, label, kind, groupId };
       videoDevices.push(videoDevice);
     }
     return videoDevices;
-  }
+  };
 
   const reset = () => {
     if (overlay) {
@@ -257,7 +271,7 @@ export default function Scanner(domElement, testMode) {
     }
 
     if (context && context) {
-      context.clearRect(0, 0, canvas.width, canvas.height)
+      context.clearRect(0, 0, canvas.width, canvas.height);
     }
 
     if (videoStream) {
@@ -271,7 +285,7 @@ export default function Scanner(domElement, testMode) {
     if (interval) {
       clearInterval(interval);
     }
-  }
+  };
 
   const internalSetup = () => {
     let id = CANVAS_ID;
@@ -279,24 +293,30 @@ export default function Scanner(domElement, testMode) {
       canvas = document.createElement("canvas");
       canvas.id = id;
 
-      context = canvas.getContext("2d", {willReadFrequently: true});
+      context = canvas.getContext("2d", { willReadFrequently: true });
 
       context.imageSmoothingEnabled = false;
 
-      canvas.setAttribute("style", "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);");
-      domElement.style.position = 'absolute';
+      canvas.setAttribute(
+        "style",
+        "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);",
+      );
+      domElement.style.position = "absolute";
       domElement.style.top = 0;
       domElement.style.bottom = 0;
       domElement.append(canvas);
     }
-  }
+  };
 
   const getCenterArea = () => {
-    let {width, height} = canvas;
-    let size = Math.min(Math.min(window.innerWidth, window.innerHeight) * 0.8, 350);
+    let { width, height } = canvas;
+    let size = Math.min(
+      Math.min(window.innerWidth, window.innerHeight) * 0.8,
+      350,
+    );
     const points = [(width - size) / 2, (height - size) / 2, size, size];
     return points;
-  }
+  };
 
   const decode = (imageData) => {
     let promise = new Promise((resolve, reject) => {
@@ -309,8 +329,8 @@ export default function Scanner(domElement, testMode) {
         worker.postMessage({
           type: "init",
           payload: {
-            basePath
-          }
+            basePath,
+          },
         });
       }
 
@@ -338,7 +358,7 @@ export default function Scanner(domElement, testMode) {
         } catch (err) {
           console.log(err);
         }
-      }
+      };
 
       let errorHandler = (...args) => {
         worker = undefined;
@@ -353,26 +373,26 @@ export default function Scanner(domElement, testMode) {
         type: "decode",
         payload: {
           imageData,
-          filterId: ""
-        }
+          filterId: "",
+        },
       });
     });
 
     return promise;
-  }
+  };
 
   const connectCamera = async (deviceId) => {
     return new Promise(async (resolve, reject) => {
       let stream;
       let constraints = {
         audio: false,
-        video: {facingMode},
-        advanced: [{focusMode: "continuous"}]
+        video: { facingMode },
+        advanced: [{ focusMode: "continuous" }],
       };
 
       if (deviceId) {
         //if we are called with a deviceId we ignore any video constraints set with facing mode
-        constraints.video = {deviceId};
+        constraints.video = { deviceId };
       }
 
       try {
@@ -390,18 +410,28 @@ export default function Scanner(domElement, testMode) {
         return reject(error);
       }
 
-      let video = document.createElement('video');
+      let video = document.createElement("video");
       video.autoplay = true;
       video.muted = true;
       video.loop = true;
-      if (!gotFullSupport()) {
-        video.width = 1;
-        video.height = 1;
-        video.setAttribute("playsinline", "");
-      }
-      video.addEventListener("loadeddata", () => {
+      video.setAttribute("playsinline", "");
+
+      // mantém o vídeo no DOM, porém escondido, para garantir que o Chrome
+      // continue decodificando frames (vídeo fora do DOM pode "congelar")
+      video.style.position = "absolute";
+      video.style.width = "1px";
+      video.style.height = "1px";
+      video.style.opacity = "0";
+      video.style.pointerEvents = "none";
+
+      video.addEventListener("loadeddata", async () => {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
+        try {
+          await video.play(); // garante que os frames avançam
+        } catch (e) {
+          console.log("video.play() falhou", e);
+        }
         interval = setInterval(drawFrame, 30);
         resolve(true);
       });
@@ -412,12 +442,9 @@ export default function Scanner(domElement, testMode) {
 
       video.srcObject = stream;
 
-      // enable autoplay video for Safari desktop and mobile
-      if (!gotFullSupport()) {
-        domElement.append(video);
-      }
+      domElement.append(video);
     });
-  }
+  };
 
   const getDataForScanning = () => {
     let frameAsImageData = context.getImageData(...getCenterArea());
@@ -428,20 +455,20 @@ export default function Scanner(domElement, testMode) {
     }
 
     return frameAsImageData;
-  }
+  };
 
   const drawCenterArea = (context) => {
     context.lineWidth = 3;
     context.strokeStyle = strokeColor;
     const centerAreaPoints = getCenterArea();
     context.strokeRect(...centerAreaPoints);
-  }
+  };
 
   const drawFrame = async (frame) => {
-    const {width, height} = canvas;
+    const { width, height } = canvas;
 
     if (!overlay) {
-      overlay = this.drawOverlay(getCenterArea(), {width, height});
+      overlay = this.drawOverlay(getCenterArea(), { width, height });
       domElement.append(overlay || null);
     }
 
@@ -456,37 +483,39 @@ export default function Scanner(domElement, testMode) {
     }
 
     context.drawImage(frame, 0, 0, width, height);
-  }
+  };
 
   const grabFrameFromStream = async () => {
-    if (!gotFullSupport()) {
-      return grabFrameAlternative();
-    }
+    return grabFrameAlternative();
 
-    let frame;
-    try {
-      const track = videoStream.getVideoTracks()[0];
-      const imageCapture = new ImageCapture(track);
-      frame = await imageCapture.grabFrame();
-    } catch (err) {
-      console.log("Got a situation during grabFrame from stream process.", err);
-    }
-    return frame;
-  }
+    // if (!gotFullSupport()) {
+    //   return grabFrameAlternative();
+    // }
+
+    // let frame;
+    // try {
+    //   const track = videoStream.getVideoTracks()[0];
+    //   const imageCapture = new ImageCapture(track);
+    //   frame = await imageCapture.grabFrame();
+    // } catch (err) {
+    //   console.log("Got a situation during grabFrame from stream process.", err);
+    // }
+    // return frame;
+  };
 
   const gotFullSupport = () => {
     return !!window.ImageCapture && !!window.ImageCapture.prototype?.grabFrame;
     //return false;
-  }
+  };
 
   const grabFrameAlternative = () => {
     let tempCanvas = document.createElement("canvas");
     let tempContext = tempCanvas.getContext("2d");
-    let {width, height} = canvas;
+    let { width, height } = canvas;
     tempCanvas.width = width;
     tempCanvas.height = height;
 
     tempContext.drawImage(videoTag, 0, 0, width, height);
     return tempCanvas;
-  }
+  };
 }
